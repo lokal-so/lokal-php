@@ -1,0 +1,22 @@
+{
+    "name": "lokal-so/lokal-php",
+    "description": "lokal.so API library",
+    "type": "library",
+    "license": "GPL-2.0-only",
+    "autoload": {
+        "psr-4": {
+            "LokalSo\\": "src/LokalSo/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ammar Faizi",
+            "email": "ammarfaizi2@gnuweeb.org"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-sockets": "*"
+    }
+}
