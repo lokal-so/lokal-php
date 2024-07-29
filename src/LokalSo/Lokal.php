@@ -289,11 +289,6 @@ class Lokal {
 		return self::outJson($this->curl("GET", $path));
 	}
 
-	private static function validateMinVersion()
-	{
-
-	}
-
 	private static function curlHeaderCheck(string $hdr): void
 	{
 		if (strpos($hdr, ":") === false)
