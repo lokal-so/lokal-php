@@ -289,8 +289,37 @@ class Lokal {
 		return self::outJson($this->curl("GET", $path));
 	}
 
+	private static function validateMinVersion()
+	{
+
+	}
+
+	private static function curlHeaderCheck(string $hdr): void
+	{
+		if (strpos($hdr, ":") === false)
+			return;
+
+		list($key, $val) = explode(":", $hdr, 2);
+
+		$key = strtolower(trim($key));
+		$val = trim($val);
+
+		if ($key !== "lokal-server-version")
+			return;
+
+		if (version_compare($val, substr(LOKAL_SERVER_MIN_VERSION, 1), "<")) {
+			$err = sprintf("Outdated software version, server version: %s, server version required (minimal): %s", $val, LOKAL_SERVER_MIN_VERSION);
+			throw new Exception($err);
+		}
+	}
+
 	public function curl(string $method, string $path, array $opt = [], array $hdr = []): string
 	{
+		$hdr_chk_func = function($ch, $hdr) {
+			self::curlHeaderCheck($hdr);
+			return strlen($hdr);
+		};
+
 		$ch = curl_init();
 		$default_opts = [
 			CURLOPT_URL => $this->base_url . $path,
@@ -298,7 +327,8 @@ class Lokal {
 			CURLOPT_HEADER => false,
 			CURLOPT_USERAGENT => "Lokal Go - github.com/lokal-so/lokal-go",
 			CURLOPT_HTTPHEADER => $hdr,
-			CURLOPT_CUSTOMREQUEST => $method
+			CURLOPT_CUSTOMREQUEST => $method,
+			CURLOPT_HEADERFUNCTION => $hdr_chk_func
 		];
 
 		foreach ($opt as $key => $value)
