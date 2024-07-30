@@ -184,6 +184,18 @@ class Tunnel implements JsonSerializable {
 		return $this;
 	}
 
+	public function getLANAddress(): string {
+		if (!str_ends_with($this->address_mdns, '.local')) {
+			$this->address_mdns = $this->address_mdns.".local";
+		}
+		return $this->address_mdns;
+	}
+
+	public function getPublicAddress(): string {
+		// TODO: implement port fallback like in golang library
+		return $this->address_public;
+	}
+
 	public function ignoreDuplicate(bool $ignore_duplicate = true): Tunnel
 	{
 		$this->ignore_duplicate = $ignore_duplicate;
@@ -229,7 +241,7 @@ class Tunnel implements JsonSerializable {
 	}
 
 	private function __showStartupBanner(): void {
-		if (!$this->startupBanner) {
+		if (!$this->startup_banner) {
 			return;
 		}
 
@@ -251,8 +263,8 @@ class Tunnel implements JsonSerializable {
 			printf("%sPublic Address%s\t\thttps://%s\n", $colors['cyan'], $colors['reset'], $this->address_public);
 		}
 
-		if (!empty($this->address_mdns)) {
-			printf("%sLAN Address%s\t\thttps://%s\n", $colors['green'], $colors['reset'], $this->address_mdns);
+		if (!empty($this->getLANAddress())) {
+			printf("%sLAN Address%s\t\thttps://%s\n", $colors['green'], $colors['reset'], $this->getLANAddress());
 		}
 
 		printf("\n");
