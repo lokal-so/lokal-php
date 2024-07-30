@@ -1,6 +1,6 @@
 {
     "name": "lokal-so/lokal-php",
-    "description": "lokal.so API library",
+    "description": "PHP Library for interacting with Lokal Client REST API",
     "type": "library",
     "license": "GPL-2.0-only",
     "autoload": {
