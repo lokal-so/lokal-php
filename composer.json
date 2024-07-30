@@ -2,6 +2,12 @@
     "name": "lokal-so/lokal-php",
     "description": "PHP Library for interacting with Lokal Client REST API",
     "type": "library",
+    "keywords": [
+        "tunnel",
+        "tunneling",
+        "networking"
+    ],
+    "homepage": "https://lokal.so/",
     "license": "GPL-2.0-only",
     "autoload": {
         "psr-4": {
@@ -12,6 +18,10 @@
         {
             "name": "Ammar Faizi",
             "email": "ammarfaizi2@gnuweeb.org"
+        },
+        {
+            "name": "Rubi Jihantoro",
+            "email": "jihantoro8@gmail.com"
         }
     ],
     "require": {

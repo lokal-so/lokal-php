@@ -349,7 +349,7 @@ class Lokal {
 			CURLOPT_URL => $this->base_url . $path,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_HEADER => false,
-			CURLOPT_USERAGENT => "Lokal Go - github.com/lokal-so/lokal-go",
+			CURLOPT_USERAGENT => "Lokal PHP - github.com/lokal-so/lokal-php",
 			CURLOPT_HTTPHEADER => $hdr,
 			CURLOPT_CUSTOMREQUEST => $method,
 			CURLOPT_HEADERFUNCTION => $hdr_chk_func
