@@ -228,16 +228,33 @@ class Tunnel implements JsonSerializable {
 		];
 	}
 
-	private function __showStartupBanner(): void
-	{
-		printf("%s\n\n", LOKAL_SO_BANNER);
-		printf("Minimum Lokal Client 	%s\n", LOKAL_SERVER_MIN_VERSION);
+	private function __showStartupBanner(): void {
+		if (!$this->startupBanner) {
+			return;
+		}
+
+		$colors = [
+			'magenta' => "\033[95m",
+			'blue' => "\033[94m",
+			'cyan' => "\033[96m",
+			'green' => "\033[92m",
+			'red' => "\033[91m",
+			'reset' => "\033[0m"
+		];
+
+		$randomColor = array_rand(array_slice($colors, 0, -1)); // Exclude 'reset'
+		printf("%s%s%s\n\n", $colors[$randomColor], LOKAL_SO_BANNER, $colors['reset']);
+
+		printf("%sMinimum Lokal Client%s\t%s\n", $colors['red'], $colors['reset'], LOKAL_SERVER_MIN_VERSION);
+
 		if (!empty($this->address_public)) {
-			printf("Public Address\t\thttps://%s\n", $this->address_public);
+			printf("%sPublic Address%s\t\thttps://%s\n", $colors['cyan'], $colors['reset'], $this->address_public);
 		}
+
 		if (!empty($this->address_mdns)) {
-			printf("LAN Address\t\thttps://%s\n", $this->address_mdns);
+			printf("%sLAN Address%s\t\thttps://%s\n", $colors['green'], $colors['reset'], $this->address_mdns);
 		}
+
 		printf("\n");
 	}
 };
