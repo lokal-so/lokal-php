@@ -23,7 +23,13 @@ $tunnel = $lokal->newTunnel()
 $ret = $tunnel->create();
 ```
 
-# Install
+## Installation
+
+```sh
+composer require lokal-so/lokal-php
+```
+
+## Development
 
 ```sh
 git clone https://github.com/lokal-so/lokal-php.git;
@@ -32,11 +38,11 @@ composer install -vvv;
 php example.php;
 ```
 
-# License
+## License
 
 GPL-2.0-only
 
-# Maintainer:
+## Maintainer:
 
 - Ammar Faizi <ammarfaizi2@gnuweeb.org>
 
