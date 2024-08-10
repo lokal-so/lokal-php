@@ -2,10 +2,14 @@
 
 PHP Library for interacting with Lokal Client REST API.
 
+| CLI Preview | Browser Preview |
+|---|---|
+| ![CLI Preview](screenshot1.png)  | ![Browser Preview](screenshot2.png) |
+
+*the screenshot are demonstrating [Lokal Laravel Provider](https://github.com/lokal-so/lokal-laravel-serve)*
+
 ```php
 <?php
-
-require __DIR__."/vendor/autoload.php";
 
 use LokalSo\Lokal;
 
