@@ -167,7 +167,7 @@ class Tunnel implements JsonSerializable {
 
 	public function setLANAddress(string $lan_address): Tunnel
 	{
-		$lan_address = rtrim($lan_address, ".local");
+		$lan_address = preg_replace('/\.local$/', '', $lan_address);
 		$this->address_mdns = $lan_address;
 		return $this;
 	}
