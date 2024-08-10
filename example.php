@@ -10,6 +10,7 @@ $lokal  = new Lokal();
 $tunnel = $lokal->newTunnel()
 	->setName("Gin test")
 	->setTunnelType(Lokal::TunnelTypeHTTP)
+	// ->setPublicAddress("cacb.k.lokal-so.site") // tunnel server required
 	->setLANAddress("backend.local")
 	->setLocalAddress($address)
 	->showStartupBanner()
