@@ -3,12 +3,12 @@
 
 namespace LokalSo {
 
-use Exception;
-use JsonSerializable;
-use GuzzleHttp\Client;
+	use Exception;
+	use JsonSerializable;
+	use GuzzleHttp\Client;
 
-const LOKAL_SERVER_MIN_VERSION = "v0.6.0";
-const LOKAL_SO_BANNER = <<<BANNER
+	const LOKAL_SERVER_MIN_VERSION = "v0.6.0";
+	const LOKAL_SO_BANNER = <<<BANNER
     __       _         _             
    / /  ___ | | ____ _| |  ___  ___  
   / /  / _ \| |/ / _  | | / __|/ _ \ 
@@ -16,342 +16,345 @@ const LOKAL_SO_BANNER = <<<BANNER
  \____/\___/|_|\_\__,_|_(_)___/\___/ 
 BANNER;
 
-class Options implements JsonSerializable {
-	/**
-	 * @var array
-	 */
-	public array $basic_auth = [];
-
-	/**
-	 * @var array
-	 */
-	public array $cidr_allow = [];
-
-	/**
-	 * @var array
-	 */
-	public array $cidr_deny = [];
-
-	/**
-	 * @var array
-	 */
-	public array $request_header_add = [];
-
-	/**
-	 * @var array
-	 */
-	public array $request_header_remove = [];
-
-	/**
-	 * @var array
-	 */
-	public array $response_header_add = [];
-
-	/**
-	 * @var array
-	 */
-	public array $response_header_remove = [];
-
-	/**
-	 * @var array
-	 */
-	public array $header_key = [];
-
-	public function __construct()
+	class Options implements JsonSerializable
 	{
-	}
+		/**
+		 * @var array
+		 */
+		public array $basic_auth = [];
 
-	public function jsonSerialize(): array
-	{
-		return get_object_vars($this);
-	}
-};
+		/**
+		 * @var array
+		 */
+		public array $cidr_allow = [];
 
-class Tunnel implements JsonSerializable {
+		/**
+		 * @var array
+		 */
+		public array $cidr_deny = [];
 
-	/**
-	 * @var string
-	 */
-	private string $name = "";
+		/**
+		 * @var array
+		 */
+		public array $request_header_add = [];
 
-	/**
-	 * @var string
-	 */
-	private string $tunnel_type = "";
+		/**
+		 * @var array
+		 */
+		public array $request_header_remove = [];
 
-	/**
-	 * @var string
-	 */
-	private string $local_address = "";
+		/**
+		 * @var array
+		 */
+		public array $response_header_add = [];
 
-	/**
-	 * @var string
-	 */
-	private string $server_id = "";
+		/**
+		 * @var array
+		 */
+		public array $response_header_remove = [];
 
-	/**
-	 * @var string
-	 */
-	private string $address_tunnel = "";
+		/**
+		 * @var array
+		 */
+		public array $header_key = [];
 
-	/**
-	 * @var int
-	 */
-	private int $address_tunnel_port = 0;
+		public function __construct() {}
 
-	/**
-	 * @var string
-	 */
-	private string $address_public = "";
-
-	/**
-	 * @var string
-	 */
-	private string $address_mdns = "";
-
-	/**
-	 * @var bool
-	 */
-	private bool $inspect = false;
-
-	/**
-	 * @var \LokalSo\Options
-	 */
-	private Options $options;
-
-	/**
-	 * @var string
-	 */
-	private string $description = "";
-
-	/**
-	 * @var bool
-	 */
-	private bool $ignore_duplicate = false;
-
-	/**
-	 * @var bool
-	 */
-	private bool $startup_banner = false;
-
-	/**
-	 * @var \LokalSo\Lokal
-	 */
-	private Lokal $lokal;
-
-	public function __construct(Lokal $lokal)
-	{
-		$this->lokal = $lokal;
-		$this->options = new Options();
-		$this->inspect = false;
-		$this->ignore_duplicate = false;
-		$this->startup_banner = false;
-	}
-
-	public function setLocalAddress(string $local_address): Tunnel
-	{
-		$this->local_address = $local_address;
-		return $this;
-	}
-
-	public function setTunnelType(string $tunnel_type): Tunnel
-	{
-		$this->tunnel_type = $tunnel_type;
-		return $this;
-	}
-
-	public function setInpsection(bool $inspect): Tunnel
-	{
-		$this->inspect = $inspect;
-		return $this;
-	}
-
-	public function setLANAddress(string $lan_address): Tunnel
-	{
-		$lan_address = preg_replace('/\.local$/', '', $lan_address);
-		$this->address_mdns = $lan_address;
-		return $this;
-	}
-
-	public function setPublicAddress(string $public_address): Tunnel
-	{
-		$this->address_public = $public_address;
-		return $this;
-	}
-
-	public function setName(string $name): Tunnel
-	{
-		$this->name = $name;
-		return $this;
-	}
-
-	public function getLANAddress(): string {
-		if (!str_ends_with($this->address_mdns, '.local')) {
-			$this->address_mdns = $this->address_mdns.".local";
+		public function jsonSerialize(): array
+		{
+			return get_object_vars($this);
 		}
-		return $this->address_mdns;
-	}
+	};
 
-	public function getPublicAddress(): string {
-		// TODO: implement port fallback like in golang library
-		return $this->address_public;
-	}
-
-	public function ignoreDuplicate(bool $ignore_duplicate = true): Tunnel
+	class Tunnel implements JsonSerializable
 	{
-		$this->ignore_duplicate = $ignore_duplicate;
-		return $this;
-	}
 
-	public function showStartupBanner(bool $startup_banner = true): Tunnel
-	{
-		$this->startup_banner = $startup_banner;
-		return $this;
-	}
+		/**
+		 * @var string
+		 */
+		private string $name = "";
 
-	public function create(): ?array
-	{
-		if (empty($this->address_mdns) && empty($this->address_public)) {
-			throw new Exception("Either LAN or Public address must be set");
+		/**
+		 * @var string
+		 */
+		private string $tunnel_type = "";
+
+		/**
+		 * @var string
+		 */
+		private string $local_address = "";
+
+		/**
+		 * @var string
+		 */
+		private string $server_id = "";
+
+		/**
+		 * @var string
+		 */
+		private string $address_tunnel = "";
+
+		/**
+		 * @var int
+		 */
+		private int $address_tunnel_port = 0;
+
+		/**
+		 * @var string
+		 */
+		private string $address_public = "";
+
+		/**
+		 * @var string
+		 */
+		private string $address_mdns = "";
+
+		/**
+		 * @var bool
+		 */
+		private bool $inspect = false;
+
+		/**
+		 * @var \LokalSo\Options
+		 */
+		private Options $options;
+
+		/**
+		 * @var string
+		 */
+		private string $description = "";
+
+		/**
+		 * @var bool
+		 */
+		private bool $ignore_duplicate = false;
+
+		/**
+		 * @var bool
+		 */
+		private bool $startup_banner = false;
+
+		/**
+		 * @var \LokalSo\Lokal
+		 */
+		private Lokal $lokal;
+
+		public function __construct(Lokal $lokal)
+		{
+			$this->lokal = $lokal;
+			$this->options = new Options();
+			$this->inspect = false;
+			$this->ignore_duplicate = false;
+			$this->startup_banner = false;
 		}
 
-		$body = json_encode($this);
-		$resp = $this->lokal->postJson("/api/tunnel/start", $body);
+		public function setLocalAddress(string $local_address): Tunnel
+		{
+			$this->local_address = $local_address;
+			return $this;
+		}
 
-		if ($this->startup_banner)
-			$this->__showStartupBanner();
+		public function setTunnelType(string $tunnel_type): Tunnel
+		{
+			$this->tunnel_type = $tunnel_type;
+			return $this;
+		}
 
-		return $resp;
-	}
+		public function setInpsection(bool $inspect): Tunnel
+		{
+			$this->inspect = $inspect;
+			return $this;
+		}
 
-	public function jsonSerialize(): array
+		public function setLANAddress(string $lan_address): Tunnel
+		{
+			$lan_address = preg_replace('/\.local$/', '', $lan_address);
+			$this->address_mdns = $lan_address;
+			return $this;
+		}
+
+		public function setPublicAddress(string $public_address): Tunnel
+		{
+			$this->address_public = $public_address;
+			return $this;
+		}
+
+		public function setName(string $name): Tunnel
+		{
+			$this->name = $name;
+			return $this;
+		}
+
+		public function getLANAddress(): string
+		{
+			if (!str_ends_with($this->address_mdns, '.local')) {
+				$this->address_mdns = $this->address_mdns . ".local";
+			}
+			return $this->address_mdns;
+		}
+
+		public function getPublicAddress(): string
+		{
+			// TODO: implement port fallback like in golang library
+			return $this->address_public;
+		}
+
+		public function ignoreDuplicate(bool $ignore_duplicate = true): Tunnel
+		{
+			$this->ignore_duplicate = $ignore_duplicate;
+			return $this;
+		}
+
+		public function showStartupBanner(bool $startup_banner = true): Tunnel
+		{
+			$this->startup_banner = $startup_banner;
+			return $this;
+		}
+
+		public function create(): ?array
+		{
+			if (empty($this->address_mdns) && empty($this->address_public)) {
+				throw new Exception("Either LAN or Public address must be set");
+			}
+
+			$body = json_encode($this);
+			$resp = $this->lokal->postJson("/api/tunnel/start", $body);
+
+			if ($this->startup_banner)
+				$this->__showStartupBanner();
+
+			return $resp;
+		}
+
+		public function jsonSerialize(): array
+		{
+			return [
+				"name" => $this->name,
+				"tunnel_type" => $this->tunnel_type,
+				"local_address" => $this->local_address,
+				"server_id" => $this->server_id,
+				"address_tunnel" => $this->address_tunnel,
+				"address_tunnel_port" => $this->address_tunnel_port,
+				"address_public" => $this->address_public,
+				"address_mdns" => $this->address_mdns,
+				"inspect" => $this->inspect,
+				"options" => $this->options,
+				"description" => $this->description,
+			];
+		}
+
+		private function __showStartupBanner(): void
+		{
+			if (!$this->startup_banner) {
+				return;
+			}
+
+			$colors = [
+				'magenta' => "\033[95m",
+				'blue' => "\033[94m",
+				'cyan' => "\033[96m",
+				'green' => "\033[92m",
+				'red' => "\033[91m",
+				'reset' => "\033[0m"
+			];
+
+			$randomColor = array_rand(array_slice($colors, 0, -1)); // Exclude 'reset'
+			printf("%s%s%s\n\n", $colors[$randomColor], LOKAL_SO_BANNER, $colors['reset']);
+
+			printf("%sMinimum Lokal Client%s\t%s\n", $colors['red'], $colors['reset'], LOKAL_SERVER_MIN_VERSION);
+
+			if (!empty($this->address_public)) {
+				printf("%sPublic Address%s\t\thttps://%s\n", $colors['cyan'], $colors['reset'], $this->getPublicAddress());
+			}
+
+			if (!empty($this->getLANAddress())) {
+				printf("%sLAN Address%s\t\thttps://%s\n", $colors['green'], $colors['reset'], $this->getLANAddress());
+			}
+
+			printf("\n");
+		}
+	};
+
+	class Lokal
 	{
-		return [
-			"name" => $this->name,
-			"tunnel_type" => $this->tunnel_type,
-			"local_address" => $this->local_address,
-			"server_id" => $this->server_id,
-			"address_tunnel" => $this->address_tunnel,
-			"address_tunnel_port" => $this->address_tunnel_port,
-			"address_public" => $this->address_public,
-			"address_mdns" => $this->address_mdns,
-			"inspect" => $this->inspect,
-			"options" => $this->options,
-			"description" => $this->description,
-		];
-	}
 
-	private function __showStartupBanner(): void {
-		if (!$this->startup_banner) {
-			return;
+		public const TunnelTypeHTTP = "HTTP";
+
+		/**
+		 * @var string
+		 */
+		private string $base_url;
+
+		/**
+		 * @var \GuzzleHttp\Client
+		 */
+		private Client $client;
+
+		public function __construct(string $base_url = "http://127.0.0.1:6174")
+		{
+			$this->base_url = $base_url;
+			$this->client = new Client([
+				'base_uri' => $this->base_url,
+				'headers' => [
+					'User-Agent' => 'Lokal PHP - github.com/lokal-so/lokal-php',
+					'Content-Type' => 'application/json',
+				],
+			]);
 		}
 
-		$colors = [
-			'magenta' => "\033[95m",
-			'blue' => "\033[94m",
-			'cyan' => "\033[96m",
-			'green' => "\033[92m",
-			'red' => "\033[91m",
-			'reset' => "\033[0m"
-		];
-
-		$randomColor = array_rand(array_slice($colors, 0, -1)); // Exclude 'reset'
-		printf("%s%s%s\n\n", $colors[$randomColor], LOKAL_SO_BANNER, $colors['reset']);
-
-		printf("%sMinimum Lokal Client%s\t%s\n", $colors['red'], $colors['reset'], LOKAL_SERVER_MIN_VERSION);
-
-		if (!empty($this->address_public)) {
-			printf("%sPublic Address%s\t\thttps://%s\n", $colors['cyan'], $colors['reset'], $this->getPublicAddress());
+		public function setBaseUrl(string $base_url): Lokal
+		{
+			$this->base_url = $base_url;
+			$this->client = new Client([
+				'base_uri' => $this->base_url,
+				'headers' => [
+					'User-Agent' => 'Lokal PHP - github.com/lokal-so/lokal-php',
+					'Content-Type' => 'application/json',
+				],
+			]);
+			return $this;
 		}
 
-		if (!empty($this->getLANAddress())) {
-			printf("%sLAN Address%s\t\thttps://%s\n", $colors['green'], $colors['reset'], $this->getLANAddress());
+		public function newTunnel(): Tunnel
+		{
+			return new Tunnel($this);
 		}
 
-		printf("\n");
-	}
-};
+		private static function outJson(string $data)
+		{
+			$ret = json_decode($data, true);
+			if (json_last_error() !== JSON_ERROR_NONE) {
+				throw new Exception("Failed to decode JSON response: {$data}");
+			}
 
-class Lokal {
+			return $ret;
+		}
 
-    public const TunnelTypeHTTP = "HTTP";
+		public function postJson(string $path, string $body): array
+		{
+			$response = $this->client->post($path, ['body' => $body]);
+			$this->checkHeaders($response->getHeaders());
 
-    /**
-     * @var string
-     */
-    private string $base_url;
+			return self::outJson($response->getBody()->getContents());
+		}
 
-    /**
-     * @var \GuzzleHttp\Client
-     */
-    private Client $client;
+		public function getJson(string $path): array
+		{
+			$response = $this->client->get($path);
+			$this->checkHeaders($response->getHeaders());
 
-    public function __construct(string $base_url = "http://127.0.0.1:6174")
-    {
-        $this->base_url = $base_url;
-        $this->client = new Client([
-            'base_uri' => $this->base_url,
-            'headers' => [
-                'User-Agent' => 'Lokal PHP - github.com/lokal-so/lokal-php',
-                'Content-Type' => 'application/json',
-            ],
-        ]);
-    }
+			return self::outJson($response->getBody()->getContents());
+		}
 
-    public function setBaseUrl(string $base_url): Lokal
-    {
-        $this->base_url = $base_url;
-        $this->client = new Client([
-            'base_uri' => $this->base_url,
-            'headers' => [
-                'User-Agent' => 'Lokal PHP - github.com/lokal-so/lokal-php',
-                'Content-Type' => 'application/json',
-            ],
-        ]);
-        return $this;
-    }
-
-    public function newTunnel(): Tunnel
-    {
-        return new Tunnel($this);
-    }
-
-    private static function outJson(string $data)
-    {
-        $ret = json_decode($data, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Failed to decode JSON response: {$data}");
-        }
-
-        return $ret;
-    }
-
-    public function postJson(string $path, string $body): array
-    {
-        $response = $this->client->post($path, ['body' => $body]);
-        $this->checkHeaders($response->getHeaders());
-
-        return self::outJson($response->getBody()->getContents());
-    }
-
-    public function getJson(string $path): array
-    {
-        $response = $this->client->get($path);
-        $this->checkHeaders($response->getHeaders());
-
-        return self::outJson($response->getBody()->getContents());
-    }
-
-    private function checkHeaders(array $headers): void
-    {
-        if (isset($headers['lokal-server-version'])) {
-            $serverVersion = $headers['lokal-server-version'][0];
-            if (version_compare($serverVersion, substr(LOKAL_SERVER_MIN_VERSION, 1), "<")) {
-                $err = sprintf("Outdated software version, server version: %s, server version required (minimal): %s", $serverVersion, LOKAL_SERVER_MIN_VERSION);
-                throw new Exception($err);
-            }
-        }
-    }
-};
-
+		private function checkHeaders(array $headers): void
+		{
+			if (isset($headers['lokal-server-version'])) {
+				$serverVersion = $headers['lokal-server-version'][0];
+				if (version_compare($serverVersion, substr(LOKAL_SERVER_MIN_VERSION, 1), "<")) {
+					$err = sprintf("Outdated software version, server version: %s, server version required (minimal): %s", $serverVersion, LOKAL_SERVER_MIN_VERSION);
+					throw new Exception($err);
+				}
+			}
+		}
+	};
 } /* namespace LokalSo */
