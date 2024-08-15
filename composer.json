@@ -27,6 +27,7 @@
     "require": {
         "php": ">=7.4",
         "ext-curl": "*",
-        "ext-sockets": "*"
+        "ext-sockets": "*",
+        "guzzlehttp/guzzle": "^7.9"
     }
 }

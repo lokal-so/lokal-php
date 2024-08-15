@@ -5,6 +5,7 @@ namespace LokalSo {
 
 use Exception;
 use JsonSerializable;
+use GuzzleHttp\Client;
 
 const LOKAL_SERVER_MIN_VERSION = "v0.6.0";
 const LOKAL_SO_BANNER = <<<BANNER
@@ -273,103 +274,84 @@ class Tunnel implements JsonSerializable {
 
 class Lokal {
 
-	public const TunnelTypeHTTP = "HTTP";
+    public const TunnelTypeHTTP = "HTTP";
 
-	/**
-	 * @var string
-	 */
-	private string $base_url;
+    /**
+     * @var string
+     */
+    private string $base_url;
 
-	public function __construct(string $base_url = "http://127.0.0.1:6174")
-	{
-		$this->base_url = $base_url;
-	}
+    /**
+     * @var \GuzzleHttp\Client
+     */
+    private Client $client;
 
-	public function setBaseUrl(string $base_url): Lokal
-	{
-		$this->base_url = $base_url;
-		return $this;
-	}
+    public function __construct(string $base_url = "http://127.0.0.1:6174")
+    {
+        $this->base_url = $base_url;
+        $this->client = new Client([
+            'base_uri' => $this->base_url,
+            'headers' => [
+                'User-Agent' => 'Lokal PHP - github.com/lokal-so/lokal-php',
+                'Content-Type' => 'application/json',
+            ],
+        ]);
+    }
 
-	public function newTunnel(): Tunnel
-	{
-		return new Tunnel($this);
-	}
+    public function setBaseUrl(string $base_url): Lokal
+    {
+        $this->base_url = $base_url;
+        $this->client = new Client([
+            'base_uri' => $this->base_url,
+            'headers' => [
+                'User-Agent' => 'Lokal PHP - github.com/lokal-so/lokal-php',
+                'Content-Type' => 'application/json',
+            ],
+        ]);
+        return $this;
+    }
 
-	private static function outJson(string $data)
-	{
-		$ret = json_decode($data, true);
-		if (json_last_error() !== JSON_ERROR_NONE) {
-			throw new Exception("Failed to decode JSON response: {$data}");
-		}
+    public function newTunnel(): Tunnel
+    {
+        return new Tunnel($this);
+    }
 
-		return $ret;
-	}
+    private static function outJson(string $data)
+    {
+        $ret = json_decode($data, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("Failed to decode JSON response: {$data}");
+        }
 
-	public function postJson(string $path, string $body): array
-	{
-		$hdr = ["Content-Type: application/json"];
-		$opt = [CURLOPT_POSTFIELDS => $body];
-		return self::outJson($this->curl("POST", $path, $opt, $hdr));
-	}
+        return $ret;
+    }
 
-	public function getJson(string $path): array
-	{
-		return self::outJson($this->curl("GET", $path));
-	}
+    public function postJson(string $path, string $body): array
+    {
+        $response = $this->client->post($path, ['body' => $body]);
+        $this->checkHeaders($response->getHeaders());
 
-	private static function curlHeaderCheck(string $hdr): void
-	{
-		if (strpos($hdr, ":") === false)
-			return;
+        return self::outJson($response->getBody()->getContents());
+    }
 
-		list($key, $val) = explode(":", $hdr, 2);
+    public function getJson(string $path): array
+    {
+        $response = $this->client->get($path);
+        $this->checkHeaders($response->getHeaders());
 
-		$key = strtolower(trim($key));
-		$val = trim($val);
+        return self::outJson($response->getBody()->getContents());
+    }
 
-		if ($key !== "lokal-server-version")
-			return;
-
-		if (version_compare($val, substr(LOKAL_SERVER_MIN_VERSION, 1), "<")) {
-			$err = sprintf("Outdated software version, server version: %s, server version required (minimal): %s", $val, LOKAL_SERVER_MIN_VERSION);
-			throw new Exception($err);
-		}
-	}
-
-	public function curl(string $method, string $path, array $opt = [], array $hdr = []): string
-	{
-		$hdr_chk_func = function($ch, $hdr) {
-			self::curlHeaderCheck($hdr);
-			return strlen($hdr);
-		};
-
-		$ch = curl_init();
-		$default_opts = [
-			CURLOPT_URL => $this->base_url . $path,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_HEADER => false,
-			CURLOPT_USERAGENT => "Lokal PHP - github.com/lokal-so/lokal-php",
-			CURLOPT_HTTPHEADER => $hdr,
-			CURLOPT_CUSTOMREQUEST => $method,
-			CURLOPT_HEADERFUNCTION => $hdr_chk_func
-		];
-
-		foreach ($opt as $key => $value)
-			$default_opts[$key] = $value;
-
-		curl_setopt_array($ch, $default_opts);
-		$res = curl_exec($ch);
-		$err = curl_error($ch);
-		$ern = curl_errno($ch);
-		curl_close($ch);
-
-		if ($ern !== 0) {
-			throw new Exception("Curl error ({$ern}): {$err}");
-		}
-
-		return $res;
-	}
+    private function checkHeaders(array $headers): void
+    {
+        if (isset($headers['lokal-server-version'])) {
+            $serverVersion = $headers['lokal-server-version'][0];
+            if (version_compare($serverVersion, substr(LOKAL_SERVER_MIN_VERSION, 1), "<")) {
+                $err = sprintf("Outdated software version, server version: %s, server version required (minimal): %s", $serverVersion, LOKAL_SERVER_MIN_VERSION);
+                throw new Exception($err);
+            }
+        }
+    }
 };
 
 } /* namespace LokalSo */
