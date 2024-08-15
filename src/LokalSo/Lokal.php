@@ -260,7 +260,7 @@ class Tunnel implements JsonSerializable {
 		printf("%sMinimum Lokal Client%s\t%s\n", $colors['red'], $colors['reset'], LOKAL_SERVER_MIN_VERSION);
 
 		if (!empty($this->address_public)) {
-			printf("%sPublic Address%s\t\thttps://%s\n", $colors['cyan'], $colors['reset'], $this->address_public);
+			printf("%sPublic Address%s\t\thttps://%s\n", $colors['cyan'], $colors['reset'], $this->getPublicAddress());
 		}
 
 		if (!empty($this->getLANAddress())) {
