@@ -220,6 +220,16 @@ BANNER;
 			$body = json_encode($this);
 			$resp = $this->lokal->postJson("/api/tunnel/start", $body);
 
+			if ($this->ignore_duplicate) {
+				if (isset($resp['success']) && $resp['success'] === false) {
+					if (isset($resp['message']) && stripos($resp['message'], 'address is already being used') !== false) {
+						$this->__showStartupBanner();
+						return $resp;
+					}
+					throw new Exception($resp['message']);
+				}
+			}
+
 			if ($this->startup_banner)
 				$this->__showStartupBanner();
 
