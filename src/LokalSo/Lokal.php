@@ -59,6 +59,74 @@ BANNER;
 
 		public function __construct() {}
 
+		public function setBasicAuth(string $username, string $password): self
+		{
+			$auth = "{$username}:{$password}";
+			if (!in_array($auth, $this->basic_auth)) {
+				$this->basic_auth[] = $auth;
+			}
+			return $this;
+		}
+
+		public function setCIDRAllow(string $cidr): self
+		{
+			if (!in_array($cidr, $this->cidr_allow)) {
+				$this->cidr_allow[] = $cidr;
+			}
+			return $this;
+		}
+
+		public function setCIDRDeny(string $cidr): self
+		{
+			if (!in_array($cidr, $this->cidr_deny)) {
+				$this->cidr_deny[] = $cidr;
+			}
+			return $this;
+		}
+
+		public function addRequestHeader(string $key, string $value): self
+		{
+			$header = "{$key}:{$value}";
+			if (!in_array($header, $this->request_header_add)) {
+				$this->request_header_add[] = $header;
+			}
+			return $this;
+		}
+
+		public function removeRequestHeader(string $header): self
+		{
+			if (!in_array($header, $this->request_header_remove)) {
+				$this->request_header_remove[] = $header;
+			}
+			return $this;
+		}
+
+		public function addResponseHeader(string $key, string $value): self
+		{
+			$header = "{$key}:{$value}";
+			if (!in_array($header, $this->response_header_add)) {
+				$this->response_header_add[] = $header;
+			}
+			return $this;
+		}
+
+		public function removeResponseHeader(string $header): self
+		{
+			if (!in_array($header, $this->response_header_remove)) {
+				$this->response_header_remove[] = $header;
+			}
+			return $this;
+		}
+
+		public function setHeaderKey(string $key, string $value): self
+		{
+			$header = "{$key}:{$value}";
+			if (!in_array($header, $this->header_key)) {
+				$this->header_key[] = $header;
+			}
+			return $this;
+		}
+
 		public function jsonSerialize(): array
 		{
 			return get_object_vars($this);
@@ -150,6 +218,12 @@ BANNER;
 		public function setLocalAddress(string $local_address): Tunnel
 		{
 			$this->local_address = $local_address;
+			return $this;
+		}
+
+		public function setOptions(Options $options): Tunnel
+		{
+			$this->options = $options;
 			return $this;
 		}
 
